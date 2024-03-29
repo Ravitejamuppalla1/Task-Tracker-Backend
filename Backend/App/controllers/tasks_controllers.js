@@ -1,5 +1,4 @@
 const Task = require('../models/task')
-const task = require('../models/task')
 
 const taskCtlr = {}
 
@@ -7,7 +6,7 @@ taskCtlr.listTasks = async (req, res) => {
 
     const { id } = req.user.id
     try {
-        const tasks = await task.find({ userId: req.user.id })
+        const tasks = await Task.find({ userId: req.user.id })
         res.json(tasks)
 
     }
@@ -21,7 +20,7 @@ taskCtlr.listTasks = async (req, res) => {
 taskCtlr.createTask = async (req, res) => {
     try {
         const { body } = req
-        const newtask = await task.create({ ...body, userId: req.user.id })
+        const newtask = await Task.create({ ...body, userId: req.user.id })
         res.json(newtask)
     }
     catch (e) {
@@ -34,7 +33,7 @@ taskCtlr.editTask = async (req, res) => {
     try {
         const { taskId } = req.params
         const { body } = req
-        const newtask = await task.findByIdAndUpdate(taskId, body, { new: true, runValidators: true })
+        const newtask = await Task.findByIdAndUpdate(taskId, body, { new: true, runValidators: true })
         res.json(newtask)
     }
     catch (e) {
@@ -72,7 +71,9 @@ taskCtlr.sortByPriority = async (req, res) => {
     try {
         const { Priority, Assignees, startDate, EndDate } = req.body;
 
-        let query = {};
+        const userId = req.user.id; 
+
+        let query = { userId }; 
 
         if (Priority) {
             query.Priority = Priority;
@@ -114,6 +115,8 @@ taskCtlr.sort = async (req, res) => {
     try {
         const { sortOrder } = req.body;
         let sortOptions = {};
+        const userId = req.user.id
+
 
         if (sortOrder === -1) {
             sortOptions = { priorityOrder: -1 }
@@ -121,7 +124,7 @@ taskCtlr.sort = async (req, res) => {
             sortOptions = { priorityOrder: 1 }
         }
 
-        const priorityData = await Task.find().sort(sortOptions)
+        const priorityData = await Task.find({ userId }).sort(sortOptions)
 
         priorityData.sort((taskA, taskB) => {
             const priorityValueA = priorityMap[taskA.Priority];
